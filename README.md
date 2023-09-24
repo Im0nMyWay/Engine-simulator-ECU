@@ -1,6 +1,6 @@
 # Engine Simulator : ECU
 
-![Alt text](.png?raw=true)
+![Alt text](/ressources/ECU_logo_dark.png?raw=true)
 
 ---
 
