@@ -1,5 +1,5 @@
 #Engine Simulator : ECU 
-![Alt text](ECU_logo.png?raw=true)
+![Alt text](.png?raw=true)
 ---
 
 ## Introduction
