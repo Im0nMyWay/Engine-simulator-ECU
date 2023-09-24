@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Welcome to *Engine Simulator : ECU*, a free and easy to use tuning software for AngeTheGreat's Engine Simulator
+Welcome to **Engine Simulator : ECU**, a free and easy to use tuning software for AngeTheGreat's Engine Simulator
 
 ## How to download the ECU 
 
