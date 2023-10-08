@@ -1,0 +1,20 @@
+TODO :
+
+- See discord for chat with LamborghiniEnjoyer (talked about the relation between max advance and redline)
+- Up to 1k rpm, set advance to +5° to avoid kickbacks when starting on the default profile
+- Add a 'Easy start' button to set ignition timing to +5° from 0 to 1k rpm : .add_sample(0000 * units.rpm, 5 * units.deg
+- Put starter settings back in the ECU in the ignition tab (and rename the tab 'ignition advance and starter') ?
+- Dark / Light / Default themes
+- Unit detection system for starter torque and others
+- VTEC control section
+- fix starter speed not being detected with the '-'
+
+
+
+
+
+Themes :
+
+Clear
+Dark
+Default
