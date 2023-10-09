@@ -9,6 +9,17 @@ import re
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+def applied_theme():
+    theme_pop_up = Toplevel(root)
+    theme_pop_up.geometry('320x30')
+    theme_pop_up.resizable(False,False)
+    theme_pop_up.iconbitmap("ressources\Icon.ico")
+    theme_pop_up.title('Refresh')
+    text = ttk.Label(master=theme_pop_up,text='Theme changes will be applied next time you open the ECU')
+    text.pack()
+
+
+
 
 def get_settings():
     global current_theme,settings_script
@@ -20,7 +31,7 @@ def get_settings():
             current_theme = (re.findall('(?<=theme=)(\w+)',item.strip())[0])
     settings_content.close()
 
-def update_theme():
+def update_theme(event):
     global credits_background,maincolor,logo_theme,textcolor,settings_script
     if current_theme == 'Clear':
         maincolor = '#e5e4e2'
@@ -40,17 +51,42 @@ def update_theme():
         logo_theme = 'default_logo.png'
         textcolor = 'black'
     
-#    print (theme_combobox.get())
+    print (theme_combobox.get())
 
-#    for item in settings_script.split("\n"):
-#        if 'theme' in item:
-#            settings_script = (settings_script.replace(item,(item.replace((re.findall('(?<=theme=)(\w+)',item.strip())[0]),(theme_combobox.get())))))
-#            print(settings_script)
+    for item in settings_script.split("\n"):
+        if 'theme' in item:
+            settings_script = (settings_script.replace(item,(item.replace((re.findall('(?<=theme=)(\w+)',item.strip())[0]),(theme_combobox.get())))))
+            print(settings_script)
 
-#    with open('ressources\settings.txt','r+') as settings_to_write:
-#        settings_to_write.write(settings_script)
-#    settings_to_write.close()
+    with open('ressources\settings.txt','w') as settings_to_write:
+        settings_to_write.write(settings_script)
+    settings_to_write.close()
+    applied_theme()
 
+
+
+
+
+
+def initial_theme():
+    global credits_background,maincolor,logo_theme,textcolor,settings_script
+    if current_theme == 'Clear':
+        maincolor = '#e5e4e2'
+        logo_theme = 'clear_logo.png'
+        credits_background = '#e5e4e2'
+        textcolor = 'black'
+
+    if current_theme == 'Dark':
+        maincolor = '#181825'
+        logo_theme = 'dark_logo.png'
+        credits_background = '#181825'
+        textcolor = 'white'
+
+    if current_theme == 'Default':
+        maincolor = 'lightgray'
+        credits_background = '#ffbe2e'
+        logo_theme = 'default_logo.png'
+        textcolor = 'black'
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------- PYTHON FUNCTIONS -------------------------------------------------------------------------------
@@ -213,7 +249,7 @@ theme_combobox = 'theme'
 
 
 get_settings()
-update_theme()
+initial_theme()
 
 
 
