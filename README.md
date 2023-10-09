@@ -10,9 +10,13 @@ Welcome to **Engine Simulator : ECU**, a free and easy to use tuning software fo
 
 ## How to download the ECU 
 
-To download the ECU,
+The ECU is currently in beta version, and there is only a small amount of features working. You can try it by downloading the raw_script folder and running the software.py script that is inside.
 
-## Installation Instructions
+## Running instructions
 
-## User Guide 
+To run the ECU, you first need to install python on your computer. Then, go to your CMD and type ```pip install pillow``` and ```pip install tkinter```.
+Then, navigate to the folder where you saved the ECU script in your CMD using the ```cd``` command. Finally, type ```python software.py``` and it should run.
 
+## Contact me
+
+If you have any issues, you can contact me on discord : im0nmyway
