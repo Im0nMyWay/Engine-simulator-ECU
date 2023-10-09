@@ -134,7 +134,7 @@ def openfile():
     starter_speed.set('Missing')
     for item in engine_script.split("\n"):
         if "starter_speed" in item:
-            starter_speed.set(re.findall('(?<=starter_speed:\s)\d+\.\d+|(?<=starter_speed:\s)\d+|(?<=starter_speed\s:)\d+\.\d+|(?<=starter_speed\s:)\d+|(?<=starter_speed\s:\s)\d+\.\d+|(?<=starter_speed\s:\s)\d+|(?<=starter_speed:)\d+\.\d+|(?<=starter_speed:)\d+',item.strip())[0])
+            starter_speed.set(re.findall('(?<=starter_speed:\s)\d+\.\d+|(?<=starter_speed:\s)\d+|(?<=starter_speed\s:)\d+\.\d+|(?<=starter_speed\s:)\d+|(?<=starter_speed\s:\s)\d+\.\d+|(?<=starter_speed\s:\s)\d+|(?<=starter_speed:)\d+\.\d+|(?<=starter_speed:)\d+|(?<=starter_speed:\s-)\d+\.\d+|(?<=starter_speed:\s-)\d+|(?<=starter_speed\s-:)\d+\.\d+|(?<=starter_speed\s-:)\d+|(?<=starter_speed\s:\s-)\d+\.\d+|(?<=starter_speed\s-:\s)\d+|(?<=starter_speed:-)\d+\.\d+|(?<=starter_speed:-)\d+',item.strip())[0])
 
 
 
