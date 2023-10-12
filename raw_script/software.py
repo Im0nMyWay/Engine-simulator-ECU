@@ -107,15 +107,11 @@ def initial_theme():
 def openfile():
     global file_path,file_content,file_name,engine_script
 
-
-
     file_path = filedialog.askopenfilename(title ='Open Engine',filetypes=(('Engine Files','*.mr'),('All files','*.*')))
     file_content = open(file_path,'r')
     file_name = ((os.path.basename(file_path)).split('.')[0])
     opened_engine.config(text=file_name)
     engine_script = file_content.read()
-
-
 
     apply_button.grid(row=0,column=3,sticky=W)
     main_notebook.add(tab_2,text='Rev Limiter')
@@ -125,44 +121,40 @@ def openfile():
     main_notebook.add(tab_5,text='Others')
 
 
-
-
     rev_limiter_duration.set('Missing')
     for item in engine_script.split("\n"):
         if "limiter_duration" in item:
             rev_limiter_duration.set(re.findall('(?<=limiter_duration:\s)\d+\.\d+|(?<=limiter_duration:\s)\d+|(?<=limiter_duration\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=limiter_duration\s:\s)\d+\.\d+|(?<=limiter_duration\s:\s)\d+|(?<=limiter_duration:)\d+\.\d+|(?<=limiter_duration:)\d+',item.strip())[0])
+    
     rev_limiter_rpm.set('Missing')
     for item in engine_script.split("\n"):
         if "rev_limit" in item:
             rev_limiter_rpm.set(re.findall('(?<=rev_limit:\s)\d+\.\d+|(?<=rev_limit:\s)\d+|(?<=rev_limit\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=rev_limit\s:\s)\d+\.\d+|(?<=rev_limit\s:\s)\d+|(?<=rev_limit:)\d+\.\d+|(?<=rev_limit:)\d+',item.strip())[0])
 
-
-
     starter_torque.set('Missing')
     for item in engine_script.split("\n"):
         if "starter_torque" in item:
             starter_torque.set(re.findall('(?<=starter_torque:\s)\d+\.\d+|(?<=starter_torque:\s)\d+|(?<=starter_torque\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=starter_torque\s:\s)\d+\.\d+|(?<=starter_torque\s:\s)\d+|(?<=starter_torque:)\d+\.\d+|(?<=starter_torque:)\d+',item.strip())[0])
+    
     starter_speed.set('Missing')
     for item in engine_script.split("\n"):
         if "starter_speed" in item:
             starter_speed.set(re.findall('(?<=starter_speed:\s)\d+\.\d+|(?<=starter_speed:\s)\d+|(?<=starter_speed\s:)\d+\.\d+|(?<=starter_speed\s:)\d+|(?<=starter_speed\s:\s)\d+\.\d+|(?<=starter_speed\s:\s)\d+|(?<=starter_speed:)\d+\.\d+|(?<=starter_speed:)\d+|(?<=starter_speed:\s-)\d+\.\d+|(?<=starter_speed:\s-)\d+|(?<=starter_speed\s-:)\d+\.\d+|(?<=starter_speed\s-:)\d+|(?<=starter_speed\s:\s-)\d+\.\d+|(?<=starter_speed\s-:\s)\d+|(?<=starter_speed:-)\d+\.\d+|(?<=starter_speed:-)\d+',item.strip())[0])
 
-
-
     plenum_volume.set('Missing')
     for item in engine_script.split("\n"):
         if "plenum_volume" in item:
             plenum_volume.set(re.findall('(?<=plenum_volume:\s)\d+\.\d+|(?<=plenum_volume:\s)\d+|(?<=plenum_volume\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=plenum_volume\s:\s)\d+\.\d+|(?<=plenum_volume\s:\s)\d+|(?<=plenum_volume:)\d+\.\d+|(?<=plenum_volume:)\d+',item.strip())[0])    
+    
     idle_throttle_plate_position.set('Missing')
     for item in engine_script.split("\n"):
         if "idle_throttle_plate_position" in item:
             idle_throttle_plate_position.set(re.findall('(?<=idle_throttle_plate_position:\s)\d+\.\d+|(?<=idle_throttle_plate_position:\s)\d+|(?<=idle_throttle_plate_position\s:)\d+\.\d+|(?<=idle_throttle_plate_position\s:)\d+|(?<=idle_throttle_plate_position\s:\s)\d+\.\d+|(?<=idle_throttle_plate_position\s:\s)\d+|(?<=idle_throttle_plate_position:)\d+\.\d+|(?<=idle_throttle_plate_position:)\d+',item.strip())[0])
+    
     number_of_intakes.set('None')
     for item in engine_script.split("\n"):
         if "intake" in item:
             number_of_intakes.set(len(re.findall('intake\s',engine_script.strip())))
-
-    
 
     simulation_frequency.set('Missing')
     for item in engine_script.split("\n"):
@@ -171,7 +163,6 @@ def openfile():
 
     file_content.close()
     
-
     
 def apply_changes():
     global engine_script
@@ -194,6 +185,14 @@ def apply_changes():
     for item in engine_script.split("\n"):
         if "idle_throttle_plate_position" in item:
             engine_script = (engine_script.replace(item,(item.replace((re.findall('(?<=idle_throttle_plate_position:\s)\d+\.\d+|(?<=idle_throttle_plate_position:\s)\d+|(?<=idle_throttle_plate_position\s:)\d+\.\d+|(?<=idle_throttle_plate_position\s:)\d+|(?<=idle_throttle_plate_position\s:\s)\d+\.\d+|(?<=idle_throttle_plate_position\s:\s)\d+|(?<=idle_throttle_plate_position:)\d+\.\d+|(?<=idle_throttle_plate_position:)\d+',item.strip())[0]),(idle_throttle_plate_position_entry.get())))))
+
+    for item in engine_script.split("\n"):
+        if "starter_torque" in item:
+            engine_script = (engine_script.replace(item,(item.replace((re.findall('(?<=starter_torque:\s)\d+\.\d+|(?<=starter_torque:\s)\d+|(?<=starter_torque\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=starter_torque\s:\s)\d+\.\d+|(?<=starter_torque\s:\s)\d+|(?<=starter_torque:)\d+\.\d+|(?<=starter_torque:)\d+',item.strip())[0]),(starter_torque_entry.get())))))
+
+    for item in engine_script.split("\n"):
+        if "starter_speed" in item:
+            engine_script = (engine_script.replace(item,(item.replace((re.findall('(?<=starter_speed:\s)\d+\.\d+|(?<=starter_speed:\s)\d+|(?<=starter_speed\s:)\d+\.\d+|(?<=starter_speed\s:)\d+|(?<=starter_speed\s:\s)\d+\.\d+|(?<=starter_speed\s:\s)\d+|(?<=starter_speed:)\d+\.\d+|(?<=starter_speed:)\d+|(?<=starter_speed:\s-)\d+\.\d+|(?<=starter_speed:\s-)\d+|(?<=starter_speed\s-:)\d+\.\d+|(?<=starter_speed\s-:)\d+|(?<=starter_speed\s:\s-)\d+\.\d+|(?<=starter_speed\s-:\s)\d+|(?<=starter_speed:-)\d+\.\d+|(?<=starter_speed:-)\d+',item.strip())[0]),(starter_speed_entry.get())))))
 
 
     with open(file_path,'r+') as engine_to_write:
@@ -226,6 +225,7 @@ def open_advance_editor():
     advance_window = Toplevel(root)
     slider_count=round((round(rev_limiter_rpm.get(), -3))/1000)
     size = str(40+25*(slider_count)) + "x" + str(150)
+    print(size)
     advance_window.geometry(size)
     advance_window.resizable(False,False)
     advance_window.iconbitmap("ressources\Icon.ico")
@@ -374,7 +374,6 @@ tab_4.pack(fill='both',expand=1)
 
 tab_4_title = ttk.Label(master=tab_4,text='Ignition advance',background=maincolor,font='20',foreground=textcolor)
 tab_4_title.place(relx=0.5,y=10,anchor=N)
-
 advance_button_text = ttk.Label(master=tab_4,text='Open advence settings :',background=maincolor,foreground=textcolor)
 open_advance_button = ttk.Button(master=tab_4,text='Open advance graph',command=open_advance_editor)
 reset_advance_text = ttk.Label(master=tab_4,text='Reset timing curve (not optimal) :',background=maincolor,foreground=textcolor)
