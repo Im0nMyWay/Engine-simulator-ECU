@@ -1,8 +1,7 @@
 from tkinter import *
 from tkinter import ttk,filedialog
 from PIL import ImageTk, Image
-import os
-import re
+import os,re,time
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------- FETCHING SETTINGS ------------------------------------------------------------------------------
@@ -15,9 +14,25 @@ def applied_theme():
     theme_pop_up.resizable(False,False)
     theme_pop_up.iconbitmap("ressources\Icon.ico")
     theme_pop_up.title('Refresh')
-    text = ttk.Label(master=theme_pop_up,text='Theme changes will be applied next time you open the ECU')
-    text.pack()
+    text = ttk.Label(master=theme_pop_up,text='Theme changes will be applied next time you open the ECU',background=maincolor,foreground=textcolor)
+    text.pack(anchor=N,expand=1,fill=BOTH)
+    theme_pop_up.update_idletasks()
+    time.sleep(2)
+    theme_pop_up.destroy()
+    root.destroy()
+    
 
+def applied_changes():
+    changes_pop_up = Toplevel(root,background=maincolor)
+    changes_pop_up.geometry('300x30')
+    changes_pop_up.resizable(False,False)
+    changes_pop_up.iconbitmap("ressources\Icon.ico")
+    changes_pop_up.title('Refresh')
+    text = ttk.Label(master=changes_pop_up,text='Changes have been applied !',background=maincolor,foreground=textcolor)
+    text.pack(anchor=N,expand=1,fill=BOTH)
+    changes_pop_up.update_idletasks()
+    time.sleep(1)
+    changes_pop_up.destroy()
 
 
 
@@ -51,19 +66,15 @@ def update_theme(event):
         logo_theme = 'default_logo.png'
         textcolor = 'black'
     
-    print (theme_combobox.get())
 
     for item in settings_script.split("\n"):
         if 'theme' in item:
             settings_script = (settings_script.replace(item,(item.replace((re.findall('(?<=theme=)(\w+)',item.strip())[0]),(theme_combobox.get())))))
-            print(settings_script)
 
     with open('ressources\settings.txt','w') as settings_to_write:
         settings_to_write.write(settings_script)
     settings_to_write.close()
     applied_theme()
-
-
 
 
 
@@ -188,6 +199,7 @@ def apply_changes():
     with open(file_path,'r+') as engine_to_write:
         engine_to_write.write(engine_script)
     engine_to_write.close()
+    applied_changes()
 
 
 def comboselectedintake(event):
