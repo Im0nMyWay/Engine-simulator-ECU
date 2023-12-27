@@ -1,13 +1,19 @@
+#-------------------------------------------------------------------------------- imports ------------------------------------------------------------------------------------
 from tkinter import *
 from tkinter import ttk,filedialog
 from PIL import ImageTk, Image
-import os,re,time
+import os,re,time,math
+#import numpy as np
+import matplotlib as plt
+plt.use('TkAgg')
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------- FETCHING SETTINGS ------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------- SETTINGS -------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+#pop up window for whenever you apply changes to the theme
 def applied_theme():
     theme_pop_up = Toplevel(root)
     theme_pop_up.geometry('320x30')
@@ -21,7 +27,7 @@ def applied_theme():
     theme_pop_up.destroy()
     root.destroy()
     
-
+#pop up window for whenever you apply changes to the engine file
 def applied_changes():
     changes_pop_up = Toplevel(root,background=maincolor)
     changes_pop_up.geometry('300x30')
@@ -34,8 +40,7 @@ def applied_changes():
     time.sleep(1)
     changes_pop_up.destroy()
 
-
-
+#get the settings from \ressources\settigs.txt
 def get_settings():
     global current_theme,settings_script
 
@@ -46,6 +51,7 @@ def get_settings():
             current_theme = (re.findall('(?<=theme=)(\w+)',item.strip())[0])
     settings_content.close()
 
+#update the app colors when changing the theme (to be reworked)
 def update_theme(event):
     global credits_background,maincolor,logo_theme,textcolor,settings_script
     if current_theme == 'Clear':
@@ -66,7 +72,6 @@ def update_theme(event):
         logo_theme = 'default_logo.png'
         textcolor = 'black'
     
-
     for item in settings_script.split("\n"):
         if 'theme' in item:
             settings_script = (settings_script.replace(item,(item.replace((re.findall('(?<=theme=)(\w+)',item.strip())[0]),(theme_combobox.get())))))
@@ -76,9 +81,7 @@ def update_theme(event):
     settings_to_write.close()
     applied_theme()
 
-
-
-
+#open with the correct theme when opening the app (YES it's the same thing as above but the one above is dependent of an event) (to be reworked)
 def initial_theme():
     global credits_background,maincolor,logo_theme,textcolor,settings_script
     if current_theme == 'Clear':
@@ -100,12 +103,12 @@ def initial_theme():
         textcolor = 'black'
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------- PYTHON FUNCTIONS -------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------- FUNCTIONS -----------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#file selection
+#open dialog window for engine file selection, and get all the values from the file in question
 def openfile():
-    global file_path,file_content,file_name,engine_script
+    global file_path,file_content,file_name,engine_script,advancerpms,advancevars,ignition_advance_script,advancerpm,advancevar
 
     file_path = filedialog.askopenfilename(title ='Open Engine',filetypes=(('Engine Files','*.mr'),('All files','*.*')))
     file_content = open(file_path,'r')
@@ -120,6 +123,8 @@ def openfile():
     main_notebook.add(tab_6,text='Starter')
     main_notebook.add(tab_5,text='Others')
 
+    advancerpm = []
+    advancevar = []
 
     rev_limiter_duration.set('Missing')
     for item in engine_script.split("\n"):
@@ -139,7 +144,7 @@ def openfile():
     starter_speed.set('Missing')
     for item in engine_script.split("\n"):
         if "starter_speed" in item:
-            starter_speed.set(re.findall('(?<=starter_speed:\s)\d+\.\d+|(?<=starter_speed:\s)\d+|(?<=starter_speed\s:)\d+\.\d+|(?<=starter_speed\s:)\d+|(?<=starter_speed\s:\s)\d+\.\d+|(?<=starter_speed\s:\s)\d+|(?<=starter_speed:)\d+\.\d+|(?<=starter_speed:)\d+|(?<=starter_speed:\s-)\d+\.\d+|(?<=starter_speed:\s-)\d+|(?<=starter_speed\s-:)\d+\.\d+|(?<=starter_speed\s-:)\d+|(?<=starter_speed\s:\s-)\d+\.\d+|(?<=starter_speed\s-:\s)\d+|(?<=starter_speed:-)\d+\.\d+|(?<=starter_speed:-)\d+',item.strip())[0])
+            starter_speed.set(re.findall('(?<=starter_speed:\s)-?\d+\.\d+|(?<=starter_speed:\s)-?\d+|(?<=starter_speed\s:)-?\d+\.\d+|(?<=starter_speed\s:)-?\d+|(?<=starter_speed\s:\s)-?\d+\.\d+|(?<=starter_speed\s:\s)-?\d+|(?<=starter_speed:)-?\d+\.\d+|(?<=starter_speed:)-?\d+|(?<=starter_speed:\s-)-?\d+\.\d+|(?<=starter_speed:\s-)-?\d+|(?<=starter_speed\s-:)-?\d+\.\d+|(?<=starter_speed\s-:)-?\d+|(?<=starter_speed\s:\s-)-?\d+\.\d+|(?<=starter_speed\s-:\s)-?\d+|(?<=starter_speed:-)-?\d+\.\d+|(?<=starter_speed:-)-?\d+',item.strip())[0])
 
     plenum_volume.set('Missing')
     for item in engine_script.split("\n"):
@@ -161,11 +166,61 @@ def openfile():
         if "simulation_frequency" in item:
             simulation_frequency.set(re.findall('(?<=simulation_frequency:\s)\d+\.\d+|(?<=simulation_frequency:\s)\d+|(?<=simulation_frequency\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=simulation_frequency\s:\s)\d+\.\d+|(?<=simulation_frequency\s:\s)\d+|(?<=simulation_frequency:)\d+\.\d+|(?<=simulation_frequency:)\d+',item.strip())[0])
 
+    ignition_advance_script = re.findall(r'(^.*function timing_curve(.|\n)*\.deg\))',engine_script.strip(),re.M)[0][0]
+
+    ignition_advance_maxvar.set('Missing')
+    for item in engine_script.split("\n"):
+        if '.add_sample' in item: 
+            ignition_advance_maxvar.set(re.findall('(?<=.add_sample\()\d+',item.strip())[-1])
+            advancerpm.append(re.findall('(?<=.add_sample\()\d+',item.strip())[0])
+            advancevar.append(re.findall('(?<=units.rpm\,\ )-?\d+',item.strip())[0])
+    
+    advancevars = [int(x) for x in advancevar]
+    advancerpms = [int(x) for x in advancerpm]
+
     file_content.close()
     
+#add or remove lines from the ignition_advance_script depending of the possible gap between redline and last rpm value in advance script
+def adjust_advance_lengh():
+    global engine_script,advancerpms,ignition_advance_script,advancerpm,advancevars,advancevar,advancerpm
+
+    if round(int(rev_limiter_rpm_entry.get()),-3) != advancerpms[len(advancerpms)-1]:
+        need_advance_adjustments = True
+
+        missing_rpm_vars = []
+        if round(int(rev_limiter_rpm_entry.get()),-3) > advancerpms[len(advancerpms)-1]:
+            for var in range (round((round(int(rev_limiter_rpm_entry.get()),-3)-advancerpms[len(advancerpms)-1])/1000)):
+                missing_rpm_vars.append(advancerpms[len(advancerpms)-1]+1000*(var+1))
+            for missing_rpm_vars in missing_rpm_vars:
+                ignition_advance_script += ('\n        .add_sample('+str(missing_rpm_vars)+' * units.rpm, '+str(advancevars[-1])+' * units.deg)')
+
+        extra_rpm_vars = []
+        if round(int(rev_limiter_rpm_entry.get()),-3) < advancerpms[len(advancerpms)-1]:
+            for var in range (0-round((round(int(rev_limiter_rpm_entry.get()),-3)-advancerpms[len(advancerpms)-1])/1000)):
+                extra_rpm_vars.append(advancerpms[len(advancerpms)-1]+1000*(0-var))
+            for item in ignition_advance_script.split("\n"):
+                if '.add_sample' in item:
+                    for var in extra_rpm_vars:
+                        if var == int(re.findall('(?<=.add_sample\()\d+',item.strip())[0]):
+                            ignition_advance_script = ignition_advance_script.replace(item,'')
+            ignition_advance_script = os.linesep.join([s for s in ignition_advance_script.splitlines() if s])
+
+    else:
+        need_advance_adjustments = False
     
+    advancevar=[]
+    advancerpm=[]
+    for item in ignition_advance_script.split("\n"):
+        if '.add_sample' in item: 
+            advancerpm.append(re.findall('(?<=.add_sample\()\d+',item.strip())[0])
+            advancevar.append(re.findall('(?<=units.rpm\,\ )-?\d+',item.strip())[0])
+    advancevars = [int(x) for x in advancevar]
+    advancerpms = [int(x) for x in advancerpm]
+
+#apply changes to the engine file and update all changed values
 def apply_changes():
-    global engine_script
+    global engine_script,advancerpms,ignition_advance_script,advancerpms,advancevars
+    adjust_advance_lengh()
     for item in engine_script.split("\n"):
         if "limiter_duration" in item:
             engine_script = (engine_script.replace(item,(item.replace((re.findall('(?<=limiter_duration:\s)\d+\.\d+|(?<=limiter_duration:\s)\d+|(?<=limiter_duration\s:)\d+\.\d+|(?<=v\s:)\d+|(?<=limiter_duration\s:\s)\d+\.\d+|(?<=limiter_duration\s:\s)\d+|(?<=limiter_duration:)\d+\.\d+|(?<=limiter_duration:)\d+',item.strip())[0]),(rev_limiter_duration_entry.get())))))
@@ -192,51 +247,161 @@ def apply_changes():
 
     for item in engine_script.split("\n"):
         if "starter_speed" in item:
-            engine_script = (engine_script.replace(item,(item.replace((re.findall('(?<=starter_speed:\s)\d+\.\d+|(?<=starter_speed:\s)\d+|(?<=starter_speed\s:)\d+\.\d+|(?<=starter_speed\s:)\d+|(?<=starter_speed\s:\s)\d+\.\d+|(?<=starter_speed\s:\s)\d+|(?<=starter_speed:)\d+\.\d+|(?<=starter_speed:)\d+|(?<=starter_speed:\s-)\d+\.\d+|(?<=starter_speed:\s-)\d+|(?<=starter_speed\s-:)\d+\.\d+|(?<=starter_speed\s-:)\d+|(?<=starter_speed\s:\s-)\d+\.\d+|(?<=starter_speed\s-:\s)\d+|(?<=starter_speed:-)\d+\.\d+|(?<=starter_speed:-)\d+',item.strip())[0]),(starter_speed_entry.get())))))
+            engine_script = (engine_script.replace(item,(item.replace((re.findall('(?<=starter_speed:\s)-?\d+\.\d+|(?<=starter_speed:\s)-?\d+|(?<=starter_speed\s:)-?\d+\.\d+|(?<=starter_speed\s:)-?\d+|(?<=starter_speed\s:\s)-?\d+\.\d+|(?<=starter_speed\s:\s)-?\d+|(?<=starter_speed:)-?\d+\.\d+|(?<=starter_speed:)-?\d+|(?<=starter_speed:\s-)-?\d+\.\d+|(?<=starter_speed:\s-)-?\d+|(?<=starter_speed\s-:)-?\d+\.\d+|(?<=starter_speed\s-:)-?\d+|(?<=starter_speed\s:\s-)-?\d+\.\d+|(?<=starter_speed\s-:\s)-?\d+|(?<=starter_speed:-)-?\d+\.\d+|(?<=starter_speed:-)-?\d+',item.strip())[0]),(starter_speed_entry.get())))))
 
+    engine_script = re.sub('(^.*function timing_curve(.|\n)*\.deg\))',ignition_advance_script,engine_script,flags = re.M)
 
     with open(file_path,'r+') as engine_to_write:
         engine_to_write.write(engine_script)
     engine_to_write.close()
     applied_changes()
 
-
+#TURBOOOOOOOOOO SOON™
 def comboselectedintake(event):
-    if turbo_intake_combobox.get() == 'Yes':
-        number_of_intakes_title.place(x=10,y=110)
-        number_of_intakes_entry.place(x=400,y=110,width=50)
+    a=0
+    #if turbo_intake_combobox.get() == 'Yes':
+    #    number_of_intakes_title.place(x=10,y=110)
+    #    number_of_intakes_entry.place(x=400,y=110,width=50)
 
-        plenum_volume_title.place(x=10,y=140)
-        plenum_volume_entry.place(x=400,y=140,width=50)
-        plenum_volume_unit.place(x=450,y=140)
-    else:
-        number_of_intakes_title.place_forget()
-        number_of_intakes_entry.place_forget()
+    #    plenum_volume_title.place(x=10,y=140)
+    #    plenum_volume_entry.place(x=400,y=140,width=50)
+    #    plenum_volume_unit.place(x=450,y=140)
+    #else:
+    #    number_of_intakes_title.place_forget()
+    #    number_of_intakes_entry.place_forget()
 
-        plenum_volume_title.place_forget()
-        plenum_volume_entry.place_forget()
-        plenum_volume_unit.place_forget()
+    #    plenum_volume_title.place_forget()
+    #    plenum_volume_entry.place_forget()
+    #    plenum_volume_unit.place_forget()
 
-
-
-
-
+#open the advcance editor and edit the ignition advance
 def open_advance_editor():
+    global advancevars,advancerpms,ignition_advance_script
     advance_window = Toplevel(root)
-    slider_count=round((round(rev_limiter_rpm.get(), -3))/1000)
-    size = str(40+25*(slider_count)) + "x" + str(150)
-    print(size)
-    advance_window.geometry(size)
+    advance_window.title("Ignition Advance")
+    advance_window.geometry('1000x600')
     advance_window.resizable(False,False)
     advance_window.iconbitmap("ressources\Icon.ico")
-    advance_window.title('Ignition Advace')
+    graph_frame=Frame(master=advance_window,width=1000,height=400)
+    graph_frame.pack()
 
+    fig = Figure(figsize=(10, 4), dpi=100)
+    axes = fig.add_subplot()
+    line, = axes.plot(advancerpms,advancevars,'tab:blue',marker='o')
+    axes.plot([0,(advancerpms[-1]+1000)],[0,0],'black',linewidth=0.5)
 
+    axes.set_xlabel('Rpms')
+    axes.set_ylabel('Ignition Advance')
 
+    if advancevars[-1] >= 0:
+        axes.set_xlim(xmin=0)
+        if advancevars[0] > 0:
+            axes.set_ylim(ymin=-5)
+        else:
+            axes.set_ylim(ymin=advancevars[0]-5)
+        
+    if advancevars[-1] < 0:
+        axes.set_xlim(xmin=0)
+        if advancevars[0] < 0:
+            axes.set_ylim(ymax=5)
+        else:
+            axes.set_ylim(ymax=advancevars[0]+5)
+        axes.invert_yaxis()
+    
+    figure_canvas = FigureCanvasTkAgg(fig,master=graph_frame)
+    figure_canvas.draw()
+    
+    figure_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
+    main_slider_frame=Frame(master=advance_window,width=1000,height=200)
+    main_slider_frame.pack(fill=BOTH,expand=1)
+
+    slider_canvas=Canvas(master=main_slider_frame,width=1000,height=200)
+    slider_canvas.place(anchor=NW,x=0,y=0)
+
+    myscrollbar=ttk.Scrollbar(master=main_slider_frame,orient=HORIZONTAL,command=slider_canvas.xview)
+    myscrollbar.place(anchor=SW,x=0,y=195,width=1000)
+
+    slider_canvas.configure(xscrollcommand=myscrollbar.set)
+    slider_canvas.bind('<Configure>', lambda e: slider_canvas.configure(scrollregion=slider_canvas.bbox('all')))
+
+    slider_frame=Frame(master=slider_canvas)
+
+    slider_canvas.create_window((0,0),window=slider_frame,anchor=NW)
+
+    slider_index=[]
+
+    for tempvar in range(len(advancerpms)):
+        if advancevars[-1] >= 0:
+            slider = Scale(master=slider_frame,orient=VERTICAL,from_=90,to=-5,length=145,command=lambda x=tempvar:getvar(x))
+        if advancevars[-1] < 0:
+            slider = Scale(master=slider_frame,orient=VERTICAL,from_=-90,to=5,length=145,command=lambda x=tempvar:getvar(x))
+        slider.set(advancevars[tempvar])
+        slider.grid(column=tempvar,row=1,sticky=N)
+
+        rpmtag = Label(master=slider_frame,text=advancerpm[tempvar])
+        rpmtag.grid(column=tempvar,row=0,sticky=N)
+
+        slider_index.append(slider)
+    
+    def getvar(tempvar):
+        for var in range (len(advancevars)):
+            advancevars[var] = slider_index[var].get()
+
+        line.set_data(advancerpms,advancevars)
+
+        if advancevars[-1] >= 0:
+            axes.set_xlim(xmin=0)
+            if advancevars[0] > 0:
+                axes.set_ylim(ymin=-5)
+            else:
+                axes.set_ylim(ymin=advancevars[0]-5)
+            axes.set_ylim(ymax=(max(advancevars)+5))
+        
+        if advancevars[-1] < 0:
+            axes.set_xlim(xmin=0)
+            if advancevars[0] < 0:
+                axes.set_ylim(ymax=5)
+            else:
+                axes.set_ylim(ymax=advancevars[0]+5)
+            axes.set_ylim(ymin=(min(advancevars)-5))
+            axes.invert_yaxis()
+        
+        figure_canvas.draw()
+    for item in ignition_advance_script.split("\n"):
+            if '.add_sample' in item:
+                for var in range (len(advancevars)):
+                    if advancerpms[var] == (re.findall('(?<=.add_sample\()\d+',item.strip())[0]):
+                        itembis = (item.split(','))[1]
+                        ignition_advance_script = ignition_advance_script.replace(item,(str(item.replace(itembis,str(itembis.replace(advancevar[var],str(advancevars[var]),1)),1))),1)
+ 
+#magical auto advance button cauz u are lazy :) autmatically changes the ignition advance to new 'good' values for the engine to work
 def reset_advance():
-    a=1
-
-
+    global ignition_advance_script,tempadvancevars,advancevars,advancevar,advancerpm
+    adjust_advance_lengh()
+    tempadvancevars = []
+    tempadvancevars.clear()
+    if starter_speed.get()>0:
+        for i in range (len(advancevars)):
+            if i==0:
+                tempadvancevars.append(-5)
+            if i>0:
+                tempadvancevars.append(int(round(advancerpms[i]/300,0)))
+    if starter_speed.get()<0:
+        for i in range (len(advancevars)):
+            if i==0:
+                tempadvancevars.append(5)
+            if i>0:
+                tempadvancevars.append(-int(round(advancerpms[i]/300,0)))
+    if tempadvancevars != []:
+        for item in ignition_advance_script.split("\n"):
+            if '.add_sample' in item:
+                for var in range (len(tempadvancevars)):
+                    if advancerpm[var] == (re.findall('(?<=.add_sample\()\d+',item.strip())[0]):
+                        itembis = (item.split(','))[1]
+                        ignition_advance_script = ignition_advance_script.replace(item,(str(item.replace(itembis,str(itembis.replace(advancevar[var],str(tempadvancevars[var]),1)),1))),1)   
+    
+    advancevar = [str(x) for x in tempadvancevars]
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------- TKINTER RENDER ---------------------------------------------------------------------------------
@@ -248,25 +413,17 @@ root.title('Engine Simulator ECU')
 root.geometry('500x300')
 root.iconbitmap("ressources\Icon.ico")
 
-
-file_name = ''
-file_path = ''
-file_content = ''
-engine_script = ''
-slider_max = 0
+#constants and empty variables needed for the program to work
+file_name,filepath,file_content,engine_script = '','','',''
 redline_delta = 500
 theme_combobox = 'theme'
+advancevar,advancerpm = [],[]
 
-
-
-
+#initial functions for theme and settings
 get_settings()
 initial_theme()
 
-
-
-
-#top frame
+#-------------------------------------------------------------------------------- top frame ------------------------------------------------------------------------------------
 top_frame = ttk.Frame(master=root)
 top_frame.pack(fill='both')
 
@@ -290,16 +447,7 @@ opened_engine.grid(row=0,column=2,sticky=W)
 #apply changes
 apply_button = ttk.Button(master=top_frame,text='Apply',command=apply_changes)
 
-
-
-
-
-
-
-
-
-
-#main frame
+#-------------------------------------------------------------------------------- main frame ------------------------------------------------------------------------------------
 main_frame = ttk.Frame(master=root)
 main_frame.pack(fill='both',expand=1)
 
@@ -307,33 +455,18 @@ main_frame.pack(fill='both',expand=1)
 main_notebook = ttk.Notebook(master=main_frame)
 main_notebook.pack(fill='both',expand=1)
 
-
-
-
-
-
-
-
-
-
-#tab 1
+#-------------------------------------------------------------------------------- tab 1 ------------------------------------------------------------------------------------
 tab_1 = Frame(master=main_notebook,width=500,height=300,bg=maincolor)
 tab_1.pack(fill='both',expand=1)
 
 tab_1_logo = ImageTk.PhotoImage((Image.open('ressources\\main_menu_logos\\'+logo_theme)).resize((512, 512)))
 tab_1_title = ttk.Label(master=tab_1,image=tab_1_logo)
-tab_1_title.place(relx=0.5,y=110,anchor=CENTER)
+tab_1_title.place(relx=0.5,y=120,anchor=CENTER)
 tab_1_text = ttk.Label(master=tab_1,background=credits_background,text='''Made by Im0nMyWay                
 Thanks to AngeTheMinimumWage, NotAngeTheGreat, AaronsLG and Cor''',font='SegoeUI 8')
 tab_1_text.place(x=0,y=250,anchor=SW)
 
-
-
-
-
-
-
-#tab 2
+#-------------------------------------------------------------------------------- tab 2 ------------------------------------------------------------------------------------
 tab_2 = Frame(master=main_notebook,width=500,height=300,bg=maincolor)
 tab_2.pack(fill='both',expand=1)
 
@@ -360,35 +493,7 @@ rev_limiter_duration_title.place(x=10,y=80)
 rev_limiter_duration_entry.place(x=400,y=80,width=50)
 rev_limiter_duration_unit.place(x=450,y=80)
 
-
-
-
-
-
-
-
-
-#tab 4
-tab_4 = Frame(master=main_notebook,width=500,height=300,background=maincolor)
-tab_4.pack(fill='both',expand=1)
-
-tab_4_title = ttk.Label(master=tab_4,text='Ignition advance',background=maincolor,font='20',foreground=textcolor)
-tab_4_title.place(relx=0.5,y=10,anchor=N)
-advance_button_text = ttk.Label(master=tab_4,text='Open advence settings :',background=maincolor,foreground=textcolor)
-open_advance_button = ttk.Button(master=tab_4,text='Open advance graph',command=open_advance_editor)
-reset_advance_text = ttk.Label(master=tab_4,text='Reset timing curve (not optimal) :',background=maincolor,foreground=textcolor)
-reset_advance_button = ttk.Button(master=tab_4,text='Reset Advance',command=reset_advance)
-
-advance_button_text.place(x=10,y=50)
-open_advance_button.place(x=350,y=50,width=135)
-reset_advance_text.place(x=10,y=80)
-reset_advance_button.place(x=350,y=80,width=135)
-
-
-
-
-
-#tab 3
+#-------------------------------------------------------------------------------- tab 3 ------------------------------------------------------------------------------------
 tab_3 = Frame(master=main_notebook,width=500,height=300,bg=maincolor)
 tab_3.pack(fill='both',expand=1)
 
@@ -422,15 +527,27 @@ plenum_volume_title = ttk.Label(master=tab_3,text='Plenum Volume :',background=m
 plenum_volume_entry = ttk.Entry(master=tab_3,textvariable=plenum_volume)
 plenum_volume_unit = ttk.Label(master=tab_3,text='L',background=maincolor,foreground=textcolor)
 
+#-------------------------------------------------------------------------------- tab 4 ------------------------------------------------------------------------------------
+ignition_advance_maxvar = IntVar()
 
+tab_4 = Frame(master=main_notebook,width=500,height=300,background=maincolor)
+tab_4.pack(fill='both',expand=1)
 
+tab_4_title = ttk.Label(master=tab_4,text='Ignition advance',background=maincolor,font='20',foreground=textcolor)
+tab_4_title.place(relx=0.5,y=10,anchor=N)
+advance_button_text = ttk.Label(master=tab_4,text='Open advence settings :',background=maincolor,foreground=textcolor)
+open_advance_button = ttk.Button(master=tab_4,text='Open advance graph',command=open_advance_editor)
+reset_advance_text = ttk.Label(master=tab_4,text='Automatic timing curve tuning (not optimal) :',background=maincolor,foreground=textcolor)
+reset_advance_button = ttk.Button(master=tab_4,text='Auto Advance',command=reset_advance)
+advance_apply_warning = ttk.Label(master=tab_4,text='WARNING ! Please press \'Apply\' before opening the advance editor',background=maincolor,foreground=textcolor)
 
+advance_apply_warning.place(relx=0.5,y=50,anchor=N)
+advance_button_text.place(x=10,y=80)
+open_advance_button.place(x=350,y=80,width=135)
+reset_advance_text.place(x=10,y=110)
+reset_advance_button.place(x=350,y=110,width=135)
 
-
-
-
-
-#tab 5
+#-------------------------------------------------------------------------------- tab 5 ------------------------------------------------------------------------------------
 tab_5 = Frame(master=main_notebook,width=500,height=300,bg=maincolor)
 tab_5.pack(fill='both',expand=1)
 
@@ -447,11 +564,7 @@ simulation_frequency_title.place(x=10,y=50)
 simulation_frequency_entry.place(x=400,y=50,width=50)
 simulation_frequency_unit.place(x=450,y=50)
 
-
-
-
-
-#tab 6
+#-------------------------------------------------------------------------------- tab 6 ------------------------------------------------------------------------------------
 tab_6 = Frame(master=main_notebook,width=500,height=300,bg=maincolor)
 tab_6.pack(fill='both',expand=1)
 
@@ -476,10 +589,7 @@ starter_torque_title.place(x=10,y=80)
 starter_torque_entry.place(x=400,y=80,width=50)
 starter_torque_unit.place(x=450,y=80)
 
-
-
-
-#tab 7
+#-------------------------------------------------------------------------------- tab 7 ------------------------------------------------------------------------------------
 tab_7 = Frame(master=main_notebook,width=500,height=300,background=maincolor)
 tab_7.pack(fill='both',expand=1)
 
@@ -489,15 +599,11 @@ tab_7_title.place(relx=0.5,y=10,anchor=N)
 theme_combobox = ttk.Combobox(master=tab_7,background=maincolor,values=['Default','Dark','Clear'])
 theme_combobox.set(current_theme)
 theme_combobox.bind('<<ComboboxSelected>>',update_theme)
-theme_combobox.place(x=350,y=50,width=100)
+theme_combobox.place(x=370,y=50,width=100)
 theme_title = ttk.Label(master=tab_7,text='Theme :',background=maincolor,foreground=textcolor)
 theme_title.place(x=10,y=50)
 
-
-
-
-
-#frame list
+#-------------------------------------------------------------------------------- tab list ------------------------------------------------------------------------------------
 main_notebook.add(tab_1,text='Home')
 main_notebook.add(tab_2,text='Rev Limiter')
 main_notebook.add(tab_4,text='Ignition Advance')
@@ -506,10 +612,7 @@ main_notebook.add(tab_6,text='Starter')
 main_notebook.add(tab_5,text='Others')
 main_notebook.add(tab_7,text='Settings')
 
-
-
-
-#run window
+#-------------------------------------------------------------------------------- main loop ------------------------------------------------------------------------------------
 main_notebook.hide(1)
 main_notebook.hide(2)
 main_notebook.hide(3)
