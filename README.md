@@ -14,4 +14,4 @@ Just go to the release page and download the lastest version
 
 ## Contact me
 
-If you have any issues, you can contact me on discord : ```im0nmyway```
+If you have any issues, you can contact me on my discord : ```https://discord.gg/TTGHpgegzT```
