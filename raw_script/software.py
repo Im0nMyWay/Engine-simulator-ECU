@@ -345,6 +345,7 @@ def open_advance_editor():
         slider_index.append(slider)
     
     def getvar(tempvar):
+        global advancerpms,advancevars,ignition_advance_script,advancerpm,advancevar
         for var in range (len(advancevars)):
             advancevars[var] = slider_index[var].get()
 
@@ -368,12 +369,13 @@ def open_advance_editor():
             axes.invert_yaxis()
         
         figure_canvas.draw()
-    for item in ignition_advance_script.split("\n"):
+        for item in ignition_advance_script.split("\n"):
             if '.add_sample' in item:
                 for var in range (len(advancevars)):
-                    if advancerpms[var] == (re.findall('(?<=.add_sample\()\d+',item.strip())[0]):
+                    if advancerpm[var] == (re.findall('(?<=.add_sample\()\d+',item.strip())[0]):
                         itembis = (item.split(','))[1]
                         ignition_advance_script = ignition_advance_script.replace(item,(str(item.replace(itembis,str(itembis.replace(advancevar[var],str(advancevars[var]),1)),1))),1)
+        advancevar = [str(x) for x in advancevars]
  
 #magical auto advance button cauz u are lazy :) autmatically changes the ignition advance to new 'good' values for the engine to work
 def reset_advance():
