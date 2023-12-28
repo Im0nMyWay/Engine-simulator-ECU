@@ -10,7 +10,7 @@ Welcome to **Engine Simulator : ECU**, a free and easy to use tuning software fo
 
 ## How to download the ECU 
 
-The ECU is currently in beta version, and there is only a small amount of features working. You can try it by downloading the raw_script folder and running the software.py script that is inside.
+Just go to the release page and download the lastest version
 
 ## Contact me
 
