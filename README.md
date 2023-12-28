@@ -14,9 +14,9 @@ The ECU is currently in beta version, and there is only a small amount of featur
 
 ## Running instructions
 
-To run the ECU, you first need to install python on your computer. Then, go to your CMD and type ```pip install pillow``` and ```pip install tkinter```.
-Then, navigate to the folder where you saved the ECU script in your CMD using the ```cd``` command. Finally, type ```python software.py``` and it should run.
+To run the ECU, you first need to install python on your computer. Then, go to your CMD and type ```pip install {package}``` and install the following packages : tkinter, pillow, regex and matplotlib.
+Then, navigate to the folder where you saved the ECU script and the ressource folder in your CMD using the ```cd``` command. Finally, type ```python software.py``` and it should run.
 
 ## Contact me
 
-If you have any issues, you can contact me on discord : im0nmyway
+If you have any issues, you can contact me on discord : ```im0nmyway```
