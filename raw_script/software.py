@@ -203,7 +203,7 @@ def adjust_advance_lengh():
                     for var in extra_rpm_vars:
                         if var == int(re.findall('(?<=.add_sample\()\d+',item.strip())[0]):
                             ignition_advance_script = ignition_advance_script.replace(item,'')
-            ignition_advance_script = os.linesep.join([s for s in ignition_advance_script.splitlines() if s])
+        ignition_advance_script = os.linesep.join([s for s in ignition_advance_script.splitlines() if s])
 
     else:
         need_advance_adjustments = False
@@ -252,6 +252,7 @@ def apply_changes():
     engine_script = re.sub('(^.*function timing_curve(.|\n)*\.deg\))',ignition_advance_script,engine_script,flags = re.M)
 
     with open(file_path,'r+') as engine_to_write:
+        engine_to_write.truncate(0)
         engine_to_write.write(engine_script)
     engine_to_write.close()
     applied_changes()
@@ -276,6 +277,7 @@ def comboselectedintake(event):
 
 #open the advcance editor and edit the ignition advance
 def open_advance_editor():
+    apply_changes()
     global advancevars,advancerpms,ignition_advance_script
     advance_window = Toplevel(root)
     advance_window.title("Ignition Advance")
@@ -313,14 +315,14 @@ def open_advance_editor():
     
     figure_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 
-    main_slider_frame=Frame(master=advance_window,width=1000,height=200)
+    main_slider_frame=Frame(master=advance_window,width=800,height=200)
     main_slider_frame.pack(fill=BOTH,expand=1)
 
-    slider_canvas=Canvas(master=main_slider_frame,width=1000,height=200)
+    slider_canvas=Canvas(master=main_slider_frame,width=800,height=200)
     slider_canvas.place(anchor=NW,x=0,y=0)
 
     myscrollbar=ttk.Scrollbar(master=main_slider_frame,orient=HORIZONTAL,command=slider_canvas.xview)
-    myscrollbar.place(anchor=SW,x=0,y=195,width=1000)
+    myscrollbar.place(anchor=SW,x=0,y=195,width=800)
 
     slider_canvas.configure(xscrollcommand=myscrollbar.set)
     slider_canvas.bind('<Configure>', lambda e: slider_canvas.configure(scrollregion=slider_canvas.bbox('all')))
@@ -343,12 +345,9 @@ def open_advance_editor():
         rpmtag.grid(column=tempvar,row=0,sticky=N)
 
         slider_index.append(slider)
-    
-    def getvar(tempvar):
-        global advancerpms,advancevars,ignition_advance_script,advancerpm,advancevar
-        for var in range (len(advancevars)):
-            advancevars[var] = slider_index[var].get()
 
+    def updategraph():
+        global advancerpms,advancevars,ignition_advance_script,advancerpm,advancevar
         line.set_data(advancerpms,advancevars)
 
         if advancevars[-1] >= 0:
@@ -369,6 +368,17 @@ def open_advance_editor():
             axes.invert_yaxis()
         
         figure_canvas.draw()
+    
+        for var in range (len(advancevars)):
+            slider_index[var].set(advancevars[var])
+    
+    def getvar(tempvar):
+        global advancerpms,advancevars,ignition_advance_script,advancerpm,advancevar
+        for var in range (len(advancevars)):
+            advancevars[var] = slider_index[var].get()
+        
+        updategraph()
+        
         for item in ignition_advance_script.split("\n"):
             if '.add_sample' in item:
                 for var in range (len(advancevars)):
@@ -376,6 +386,24 @@ def open_advance_editor():
                         itembis = (item.split(','))[1]
                         ignition_advance_script = ignition_advance_script.replace(item,(str(item.replace(itembis,str(itembis.replace(advancevar[var],str(advancevars[var]),1)),1))),1)
         advancevar = [str(x) for x in advancevars]
+    
+    buttons_frame = Frame(master=advance_window,width=200,height=195)
+    buttons_frame.place(anchor=NW,x=800,y=405)
+
+    def plus2deg():
+        for temp in range (len(advancevars)):
+            advancevars[temp] = advancevars[temp]+2
+        updategraph()
+    
+    def minus2deg():
+        for temp in range (len(advancevars)):
+            advancevars[temp] = advancevars[temp]-2
+        updategraph()
+
+    plus2button = ttk.Button(master=buttons_frame,width=12,text='+2°',command=plus2deg)
+    minus2button = ttk.Button(master=buttons_frame,width=12,text='-2°',command=minus2deg)
+    plus2button.place(x=10,y=10,anchor=NW)
+    minus2button.place(x=190,y=10,anchor=NE)
  
 #magical auto advance button cauz u are lazy :) autmatically changes the ignition advance to new 'good' values for the engine to work
 def reset_advance():
